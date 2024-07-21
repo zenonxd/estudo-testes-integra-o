@@ -119,13 +119,9 @@ Depois disso, só colocar nos Asserts a instancia de RunTimeException e o teste 
 
 <hr>
 
-## Fim
-<<<<<<< HEAD
-=======
-E aqui finalizemos os cenários de erro a nivel de serviço. Mas... não temos a garantia ainda de que o sistema está
-tratando dados invalidos. De fato isso é verdade, a gente precisa testar as camadas que fazem essa validação,
-Controller e Repositories.
+# Resumo
 
-Mas essas camadas possuem integração (controller com web) e (repositorie com banco de dados). Por isso agora,
-utilizaremos [Testes de Integração]().
->>>>>>> parent of dbf366a (Update ReadMe.md)
+<hr>
+
+## Fim
+
