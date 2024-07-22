@@ -42,7 +42,7 @@ ou Repository, faremos o mesmo no pacote de teste.
 ## Testando cenário de sucesso no repository
 
 Criaremos uma classe PlanetRepositoryTest com um método que irá testar a criação de um planeta
-com dados inválidos.
+com dados válidos.
 
 1. Lembrar de importar o PlanetRepository com injeção do AutoWired;
 2. Passar no corpo do método a notação @DataJpaTest, que será responsável pela criação de um banco fake (H2);
@@ -111,7 +111,17 @@ Depois disso, usamos uma anotação em cima de cada atributo (@NotEmpty).
 
 Depois disso, só colocar nos Asserts a instancia de RunTimeException e o teste irá passar :).
 
+```java
+    @Test
+    public void createPlanet_WithInvalidData_ThrowsException() {
+        Planet emptyPlanet = new Planet(null, null, null);
+        Planet invalidPlanet = new Planet("", "", "");
 
+
+        assertThatThrownBy(() -> planetRepository.save(invalidPlanet)).isInstanceOf(RuntimeException.class);
+        assertThatThrownBy(() -> planetRepository.save(emptyPlanet)).isInstanceOf(RuntimeException.class);
+    }
+```
 
 
 
