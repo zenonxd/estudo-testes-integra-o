@@ -53,4 +53,20 @@ public class PlanetRepositoryTest {
         assertThatThrownBy(() -> planetRepository.save(invalidPlanet)).isInstanceOf(RuntimeException.class);
         assertThatThrownBy(() -> planetRepository.save(emptyPlanet)).isInstanceOf(RuntimeException.class);
     }
+
+    @Test
+    public void createPlanet_WithExistingName_ThrowsException() {
+
+        //aqui salvamos, atualizamos a mudança no banco e depois buscaremos para ter certeza
+        // de que funcionou.
+        Planet planet = testEntityManager.persistFlushFind(PLANET);
+
+        //desacopla pro Hibernate não olhar mais para essa instancia
+        testEntityManager.detach(planet);
+
+        //tira o ID
+        planet.setId(null);
+
+        assertThatThrownBy(() -> planetRepository.save(planet)).isInstanceOf(RuntimeException.class);
+    }
 }
