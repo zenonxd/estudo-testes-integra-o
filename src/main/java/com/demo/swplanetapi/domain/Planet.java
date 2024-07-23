@@ -41,6 +41,13 @@ public class Planet {
         this.terrain = terrain;
     }
 
+    public Planet(Long id, String name, String climate, String terrain) {
+        this.id = id;
+        this.name = name;
+        this.climate = climate;
+        this.terrain = terrain;
+    }
+
     @Override
     public boolean equals(Object obj) {
         //primeiro parametro = objeto que estamos verificando se é igual.

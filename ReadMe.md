@@ -347,7 +347,7 @@ Para retornar por fim nosso 422, criaremos um componente novo na implementação
 exceção, veja:
 
 ### ETAPA 2
-2. [ ] Dentro do Web, criaremos um novo componente: GeneralExceptionHandler (um manejador de exceção
+2. [ ] Dentro do pacote Web, criaremos um novo componente: GeneralExceptionHandler (um manejador de exceção
 genérico).
 
 Ele terá anotação ControllerAdvice. Essa anotação permite que essa nova classe, trate uma exceção
@@ -401,8 +401,261 @@ Código final do controller:
 
     }
 ```
+<hr>
+
+## Testando cenário de planeta existente no controller
+
+Testando cenário de conflito (pois o planeta já existe). Para isso, teremos que criar um teste específico.
+
+Para sabermos o tipo de exceção que será lançada, a gente pode voltar no RepositoryTest e no método
+de teste de criação de planeta, comentar o código de assertThatThrownBy e iniciar utilizando somente o
+planetRepository.save, veja:
+
+![img_2.png](img_2.png)
+
+Exceção lançada:
+
+![img_3.png](img_3.png)
+
+Agora, precisamos tratar a exceção DataIntegrity. Dentro da Classe General Exception, faremos o seguinte:
+
+### ETAPA 1
+1. [ ] Usaremos a anotação @ExceptionHandler, e como parâmetro, passaremos a exceção a ser tratada;
+2. [ ] Criaremos o método handleConflict que retornará uma ResponseEntity
+3. [ ] No parâmetro, passaremos a exceção a ser lançada. Isso é otimo, pois se quisermos fazer alguns ifs dentro
+do método, é possivel. Nem sempre toda DataIntegrity seria um conflito, por exemplo.
+
+```java
+    private ResponseEntity<Object> handleConflict(DataIntegrityViolationException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ex.getMessage());
+    }
+```
+
+### ETAPA 2
+
+Agora, no controller nosso método irá funcionar e o teste dará ok. :)
+<hr>
+
+## Exercício 1 - Testando consulta de planeta por ID
+
+![img_4.png](img_4.png)
+
+### Controller
+
+```java
+    @Test
+    public void getPlanet_WithExistingId_ReturnsPlanet() throws Exception {
+        //quando o service retorna um planeta
+        when(planetService.get(1L)).thenReturn(Optional.of(PLANET));
+        
+        //o mesmo planeta é retornado pelo controlador no final
+        mockMvc
+                .perform(
+                    get("/planets/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(PLANET));
+    }
+
+    @Test
+    public void getPlanet_WithInvalidId_ReturnsNotFound() throws Exception {
+        //quando o service não retorna nada
+        // ou seja, não temum stub, ele retorna notFound
+        mockMvc.perform(
+                get("/planets/1"))
+                .andExpect(status().isNotFound());
+    }
+```
+<hr>
+
+### Repository
+
+Para não termos nenhum erro de testar um ID que já foi criado num teste, podemos criar uma estrategia
+de zerar os Ids a cada teste feito.
+
+Para isso, na classe repository, criamos:
+```java
+    @AfterEach
+    public void afterEach() {
+        PLANET.setId(null);
+    }
+```
+
+AfterEach serve, portanto, para operações de limpeza após cada teste realizado. 
+
+```java
+    @Test
+    public void getPlanet_ByExistingId_ReturnsPlanet()  {
+        Planet planet = testEntityManager.persistFlushFind(PLANET);
+        Optional<Planet> planetOpt = planetRepository.findById(planet.getId());
+        assertThat(planetOpt).isNotEmpty();
+        assertThat(planetOpt.get()).isEqualTo(planet);
+    }
+
+    @Test
+    public void getPlanet_ByUnexistingId_ReturnsEmpty() {
+        Optional<Planet> planetOpt = planetRepository.findById(1L);
+        assertThat(planetOpt).isEmpty();
+    }
+```
+<hr>
+
+## Exercício 2 - Testando consulta de planeta por nome
+
+### Controller
+
+```java
+    @Test
+    public void getPlanet_ByExistingName_ReturnsPlanet() throws Exception {
+        when(planetService.getByName(PLANET.getName())).thenReturn(Optional.of(PLANET));
+
+        mockMvc
+                .perform(
+                        get("/planets/name/" + PLANET.getName()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(PLANET));
+
+    }
+
+    @Test
+    public void getPlanet_ByUnexistingName_ReturnsNotFound() throws Exception{
+        mockMvc.perform(
+                get("/planets/name/1"))
+                .andExpect(status().isNotFound());
+    }
+```
+<hr>
+
+### Repository
+
+```java
+    @Test
+    public void getPlanet_ByExistingName_ReturnsPlanet() {
+        Planet planet = testEntityManager.persistFlushFind(PLANET);
+        Optional<Planet> planetOpt = planetRepository.findByName(PLANET.getName());
+        assertThat(planetOpt).isNotEmpty();
+        assertThat(planetOpt.get()).isEqualTo(planet);
+    }
+
+    @Test
+    public void getPlanet_ByUnexistingName_ReturnsNotFound() {
+        Optional<Planet> planetOpt = planetRepository.findByName("name");
+        assertThat(planetOpt).isEmpty();
+    }
+```
+<hr>
+
+## Exercício 3 - Testando Listagem de Planetas
+
+![img_5.png](img_5.png)
+
+### Controller
+
+
+```java
+    @Test
+    public void listPlanets_ReturnsFilteredPlanets() throws Exception {
+        //primeiro teste, não passando nenhum filtro e ver se algum
+        //planeta é listado
+        when(planetService.list(null, null)).thenReturn(PLANETS);
+        
+        //segundo teste passando filtro (terreno e clima)
+        //vendo se apenas o planeta que passamos (TATOOINE), é listado
+        when(planetService.list(TATOOINE.getTerrain(), TATOOINE.getClimate())).thenReturn(List.of(TATOOINE));
+
+        //teste sem filtro, para ver se retorna tudo
+        mockMvc
+                .perform(
+                        get("/planets"))
+                .andExpect(status().isOk())
+                //verificamos o tamanho do array com hasSize
+                // (biblioteca do hamCrast)
+                .andExpect(jsonPath("$", hasSize(3)));
+
+        //teste pra ver se retorna somente tatooine, quando passa
+        //filtro de terreno e clima.
+        mockMvc
+                .perform(
+                  get("/planets?" + String.format("terrain=%s%climate=%s", TATOOINE.getTerrain(), TATOOINE.getClimate())))
+                .andExpect(status().isOk())
+                
+                //filtro de planeta, tamanho esperado 1
+                .andExpect(jsonPath("$", hasSize(1)))
+                
+                //pegando o primeiro elemento e vendo se é 
+                //igual a tatooine
+                .andExpect(jsonPath("$[0]").value(TATOOINE));
+}
+    
+
+    @Test
+    public void listPlanets_ReturnsNoPlanets() throws Exception {
+        //stub sem passar nenhum filtro, para retornar lista vazia
+        when(planetService.list(null, null)).thenReturn(Collections.emptyList());
+
+        mockMvc
+                .perform(
+                        //verifica que a lista retornada, é vazia
+                        get("/planets"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+
+    }
+```
+<hr>
+
+### Repository 
+
+Nos testes antriores, estávamos usando o entityManager para persistir os dados preparados para teste.
+
+Nesse caso de lista, é legal a gente ter mais de um planeta, para saber se filtragem está funcionando. Por isso
+utilizamos o Script SQL, carregando uma massa de dados para ver a listagem funciona.
+
+```java
+    //anotacao para carregar os scripts
+    //quando rodarmos o teste, já terá dois planetas no banco de dados
+    @Sql(scripts = "/import_planets.sql")
+    @Test
+    public void listPlanets_ReturnsFilteredPlanets() {
+    
+        Example<Planet> queryWithoutFilters = QueryBuilder.makeQuery(new Planet());
+        
+        //usando querybuilder pra passar os planetas que queremos usar
+        Example<Planet> queryWithFilters = QueryBuilder.makeQuery(new Planet(TATOOINE.getClimate(), TATOOINE.getTerrain()));
+
+        //consulta usando as querys construidas acima
+        List<Planet> responseWithoutFilters = planetRepository.findAll(queryWithoutFilters);
+        List<Planet> responseWithFilters = planetRepository.findAll(queryWithFilters);
+
+        //se não tiver filtro, queremos o retorno de 3 planetas
+        assertThat(responseWithoutFilters).isNotEmpty();
+        assertThat(responseWithoutFilters).hasSize(3);
+
+        //se tiver filtro, quero o retorno de 1 planeta (o filtrado)
+        assertThat(responseWithFilters).isNotEmpty();
+        assertThat(responseWithFilters).hasSize(1);
+        assertThat(responseWithFilters.get(0)).isEqualTo(TATOOINE);
+
+    }
+
+    @Test
+    public void listPlanets_ReturnsNoPlanets() {
+        //query sem filtro pra filtrar nenhum planeta
+        Example<Planet> query = QueryBuilder.makeQuery(new Planet());
+
+        //find
+        List<Planet> response = planetRepository.findAll(query);
+
+        //verifica resposta vazia
+        assertThat(response).isEmpty();
+    }
+```
+
+
 
 # Resumo
+
+Essa sessão se utiliza mais framework (SpringBoot) do que a de unidade que só utiliza o mockito
 
 <hr>
 
