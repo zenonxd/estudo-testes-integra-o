@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Example;
 import org.springframework.test.context.jdbc.Sql;
 
@@ -136,5 +137,27 @@ public class PlanetRepositoryTest {
         List<Planet> response = planetRepository.findAll(query);
 
         assertThat(response).isEmpty();
+    }
+
+    @Test
+    public void removePlanet_WithExistingId_ReturnsNoContent() {
+        //criando planeta com testEntityManager
+        Planet planet = testEntityManager.persistFlushFind(PLANET);
+
+        //deletando ele
+        planetRepository.deleteById(planet.getId());
+
+        //verificando se esse planeta ainda existe
+        Planet removedPlanet = testEntityManager.find(Planet.class, planet.getId());
+
+        //retorno tem que ser nulo
+        assertThat(removedPlanet).isNull();
+    }
+
+    @Test
+    public void removePlanet_WithUnexistingId_ReturnsNotFound() {
+        //só verificar se quando a gente chama esse método, passando uma
+        //id inexistente
+        assertThatThrownBy(() -> planetRepository.deleteById(1L)).isInstanceOf(EmptyResultDataAccessException.class);
     }
 }

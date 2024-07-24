@@ -19,11 +19,12 @@ Durante o estudo, os códigos mudam pois geralmente é ensinado algo básico ond
 - [Controller](#controller)
   - [Testando cenário de sucesso](#testando-cenários-de-sucesso-no-controller)
   - [Testando cenário de dados inválidos](#testando-cenário-de-dados-invalidos-no-controller)
+  - [Testando cenário de planeta existente](#testando-cenário-de-planeta-existente-no-controller)
 - [Exercícios sobre Testes de Integração](#exercícios)
-  - [Exercício 1 - ]()
-  - [Exercício 2 - ]()
-  - [Exercício 3 - ]()
-  - [Exercício 4 - ]()
+  - [Exercício 1 - ](#exercício-1---testando-consulta-de-planeta-por-id)
+  - [Exercício 2 - ](#exercício-2---testando-consulta-de-planeta-por-nome)
+  - [Exercício 3 - ](#exercício-3---testando-listagem-de-planetas)
+  - [Exercício 4 - ](#exercício-4---testando-remoção-de-planeta)
 - [Resumo Sobre o Estudo](#resumo)
 <hr>
 
@@ -104,8 +105,11 @@ public class PlanetRepositoryTest {
         assertThat(sut.getClimate()).isEqualTo(PLANET.getClimate());
         assertThat(sut.getTerrain()).isEqualTo(PLANET.getTerrain());
     }
+}
 ```
 <hr>
+
+
 
 ## Testando cenário de dados inválidos no repository
 
@@ -238,7 +242,7 @@ traduzir o Objeto para String, provavelmente um JSON.
 <hr>
 
 ### ETAPA 3
-3.[ ] Para aferir os resultados, usaremos ainda no perform o ".andExpect", para colocar como parâmetro
+3. [ ] Para aferir os resultados, usaremos ainda no perform o ".andExpect", para colocar como parâmetro
 as nossas verificações.
 
 Este método, recebe como parâmetro um ResultMatcher (também do MockMvc). Nele, poderemos testar
@@ -436,6 +440,8 @@ do método, é possivel. Nem sempre toda DataIntegrity seria um conflito, por ex
 
 Agora, no controller nosso método irá funcionar e o teste dará ok. :)
 <hr>
+
+# Exercícios
 
 ## Exercício 1 - Testando consulta de planeta por ID
 
@@ -650,14 +656,90 @@ utilizamos o Script SQL, carregando uma massa de dados para ver a listagem funci
         assertThat(response).isEmpty();
     }
 ```
+<hr>
 
+## Exercício 4 - Testando remoção de planeta
 
+Dois cenários: Deletando com um ID que existe (retorna 204) e deletando com um ID que não existe (retorna 404).
+
+Aqui devemos considerar alguns comportamentos. Se tentarmos excluir um planeta, por exemplo, com um ID que não existe,
+ele vai retornar not found, mas precisamos tratar essa exceção. 
+
+Faremos isso como já sabemos no GeneralExceptionHandler.
+
+### Controller
+
+Como os stubs são usados para amarrar comportamento, ou seja, quando fizermos uma chamada de método, irá acontecer
+algo. Nesse caso em pauta, não teremos nenhum retorno, portanto, não necessita-se de um stub.
+```java
+    @Test
+    public void removePlanet_WithExistingId_ReturnsNoContent() throws Exception {
+        //como o retorno não tem nenhum contetudo,
+        //não precisa fazer stub
+        mockMvc.perform(
+                delete("/planets/1"))
+                .andExpect(status().isNoContent());
+
+    }
+```
+
+Já na remoção com ID inexistente, precisamos de um stub, pois será retornado uma exceção.
+
+Geralmente, os nossos stubs são criados com ``when(condicao).thenTrhow``. Dessa vez, como pode ser visto no código
+abaixo, usamos o doThrow. Isso acontece, porque o método ``planetService.remove()``, retorna VOID. O When não suporta
+métodos que retornem void.
+
+Então a gente inverte, primeiro a exceção a ser lançada, depois o serviço e por fim o método (remove).
+```java
+    @Test
+    public void removePlanet_WithUnexistingId_ReturnsNotFound() throws Exception {
+        final Long planetId = 1L;
+
+        doThrow(new EmptyResultDataAccessException(1)).when(planetService).remove(planetId);
+
+        mockMvc.perform(
+                delete("/planets/" + planetId))
+                .andExpect(status().isNotFound());
+    }
+```
+<hr>
+
+### Repository
+
+Aqui foi mais simples pois não teve nenhuma novidade.
+
+```java
+    @Test
+    public void removePlanet_WithExistingId_ReturnsNoContent() {
+        Planet planet = testEntityManager.persistFlushFind(PLANET);
+
+        planetRepository.deleteById(planet.getId());
+
+        Planet removedPlanet = testEntityManager.find(Planet.class, planet.getId());
+
+        assertThat(removedPlanet).isNull();
+    }
+
+    @Test
+    public void removePlanet_WithUnexistingId_ReturnsNotFound() {
+        assertThatThrownBy(() -> planetRepository.deleteById(1L)).isInstanceOf(EmptyResultDataAccessException.class);
+    }
+```
 
 # Resumo
 
-Essa sessão se utiliza mais framework (SpringBoot) do que a de unidade que só utiliza o mockito
+Essa seção se utiliza mais framework (SpringBoot) do que a de [testes de unidade]() que só utiliza o mockito.
 
+Aqui trabalhamos com as bordas de aplicação. Ou seja, interação com banco de dado/camada web.
+
+Trabalhamos não só com Mockito mas também com SpringBoot.
+
+Existem dois tipos de teste de integração:
+
+1. Restrito - Quando trabalhamos somente com uma camada (repositório e dado)
+2. Amplos - Quando os testes cruzam outras camadas (quando testamos componentes)
 <hr>
 
 ## Fim
 
+Agora, iremos para [testes subcutâneos]().
