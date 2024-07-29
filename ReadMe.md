@@ -1,3 +1,16 @@
+<h1 align="center">
+  StarWars Planet API (sw-planet-api)
+</h1>
+
+<p align="center">
+  <a href="#-technologies">Tecnologias</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#-introdução">Introdução</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/static/v1?label=Curso na Udemy&message=Testes automatizados na prática com Spring Boot&color=8257E5&labelColor=000000" alt="Testes automatizados na prática com Spring Boot" />
+</p>
+
 # Estudo Testes de Unidade
 
 ## Referência: Testes automatizados na prática com Spring Boot
@@ -8,28 +21,71 @@
 Durante o estudo, os códigos mudam pois geralmente é ensinado algo básico onde depois iremos implementar o que de fato
 é utilizado no mercado de trabalho. Tome cuidado ao considerar códigos do início do estudo, se atente ao código final.
 
-## Tópicos
+## ✨ Technologies
 
-- [Introdução](#introdução)
+- [Mysql](https://dev.mysql.com/downloads/mysql/)
+- [Java](https://www.oracle.com/java/technologies/downloads/)
+- [Maven](https://maven.apache.org/download.cgi)
+- [Spring Boot](https://spring.io/projects/spring-boot)
+- [Spring Testing](https://docs.spring.io/spring-framework/docs/current/reference/html/testing.html#testing-introduction)
+- [JUnit 5](https://junit.org/junit5/docs/current/user-guide/)
+- [Mockito](https://site.mockito.org)
+- [AssertJ](https://github.com/assertj/assertj)
+- [Hamcrest](http://hamcrest.org/JavaHamcrest/)
+- [Jacoco](https://github.com/jacoco/jacoco)
+- [Pitest](https://pitest.org)
 
-- [Repository](#repository)
-  - [Testando cenários de sucesso](#testando-cenário-de-sucesso-no-repository)
-  - [Testando cenário de dados inválidos](#testando-cenário-de-dados-inválidos-no-repository)
-  - [Testando cenário de planeta existente](#testando-cenário-de-planeta-existente-no-repository)
-- [Controller](#controller)
-  - [Testando cenário de sucesso](#testando-cenários-de-sucesso-no-controller)
-  - [Testando cenário de dados inválidos](#testando-cenário-de-dados-invalidos-no-controller)
-  - [Testando cenário de planeta existente](#testando-cenário-de-planeta-existente-no-controller)
-- [Exercícios sobre Testes de Integração](#exercícios)
-  - [Exercício 1 - ](#exercício-1---testando-consulta-de-planeta-por-id)
-  - [Exercício 2 - ](#exercício-2---testando-consulta-de-planeta-por-nome)
-  - [Exercício 3 - ](#exercício-3---testando-listagem-de-planetas)
-  - [Exercício 4 - ](#exercício-4---testando-remoção-de-planeta)
-- [Resumo Sobre o Estudo](#resumo)
+## 📌 Tópicos
+
+* [Estudo Testes de Unidade](#estudo-testes-de-unidade)
+  * [Referência: Testes automatizados na prática com Spring Boot](#referência-testes-automatizados-na-prática-com-spring-boot)
+  * [Dica para leitura:](#dica-para-leitura)
+  * [✨ Technologies](#-technologies)
+  * [📌 Tópicos](#-tópicos)
+  
+
+* [💻 Introdução](#-introdução)
 <hr>
 
+* [Repository](#repository)
+  * [🧪 Testando cenário de sucesso no repository](#-testando-cenário-de-sucesso-no-repository)
+    * [❓ Como verificar que o planeta que eu criei é igual ao que mandei salvar no banco?](#-como-verificar-que-o-planeta-que-eu-criei-é-igual-ao-que-mandei-salvar-no-banco)
+  * [🧪 Testando cenário de dados inválidos no repository](#-testando-cenário-de-dados-inválidos-no-repository)
+  * [🧪 Testando cenário de planeta existente no repository](#-testando-cenário-de-planeta-existente-no-repository)
+  * [❗ IMPORTANTE](#-importante)
+<hr>
 
-# Introdução
+* [Controller](#controller)
+  * [🧪 Testando cenários de sucesso no Controller](#-testando-cenários-de-sucesso-no-controller)
+    * [Cadastro de planeta com sucesso](#cadastro-de-planeta-com-sucesso)
+  * [🛠️ Construindo requisição](#-construindo-requisição)
+  * [🧪 Testando cenário de dados invalidos no controller](#-testando-cenário-de-dados-invalidos-no-controller)
+  * [🧪 Testando cenário de planeta existente no controller](#-testando-cenário-de-planeta-existente-no-controller)
+<hr>
+
+* [✅ Exercícios](#-exercícios)
+  * [Exercício 1 - Testando consulta de planeta por ID](#exercício-1---testando-consulta-de-planeta-por-id)
+    * [Controller](#controller-1)
+    * [Repository](#repository-1)
+<hr>
+
+  * [Exercício 2 - Testando consulta de planeta por nome](#exercício-2---testando-consulta-de-planeta-por-nome)
+    * [Controller](#controller-2)
+    * [Repository](#repository-2)
+<hr>
+
+  * [Exercício 3 - Testando Listagem de Planetas](#exercício-3---testando-listagem-de-planetas)
+    * [Controller](#controller-3)
+    * [Repository](#repository-)
+<hr>
+
+  * [Exercício 4 - Testando remoção de planeta](#exercício-4---testando-remoção-de-planeta)
+    * [Controller](#controller-4)
+    * [Repository](#repository-3)
+* [Resumo](#resumo)
+<hr>
+
+# 💻 Introdução
 ![img.png](img.png)
 
 
@@ -53,7 +109,7 @@ ou Repository, faremos o mesmo no pacote de teste.
 
 # Repository
 
-## Testando cenário de sucesso no repository
+## 🧪 Testando cenário de sucesso no repository
 
 Criaremos uma classe PlanetRepositoryTest com um método que irá testar a criação de um planeta
 com dados válidos.
@@ -64,7 +120,7 @@ com dados válidos.
 do tipo Planet;
 4. [ ] Criar um SUT que vai ter como retorno um testEntityManager que deve ser importado com Autowired também.
 
-### Como verificar que o planeta que eu criei é igual ao que mandei salvar no banco?
+### ❓ Como verificar que o planeta que eu criei é igual ao que mandei salvar no banco?
 Não seria interessante a gente verificar isso usando o repository para fazer um find, por exemplo. Ele já
 está sendo utilizado pro ".save()", ou seja, se algo no repository estiver errado, tudo dará erro. Não
 podemos misturar as coisas.
@@ -111,7 +167,7 @@ public class PlanetRepositoryTest {
 
 
 
-## Testando cenário de dados inválidos no repository
+## 🧪 Testando cenário de dados inválidos no repository
 
 Em um teste de dados inválidos, lançaremos exceções. 
 
@@ -141,7 +197,7 @@ Depois disso, só colocar nos Asserts a instancia de RunTimeException e o teste 
 ```
 <hr>
 
-## Testando cenário de planeta existente no repository
+## 🧪 Testando cenário de planeta existente no repository
 
 Como já sabemos, não usaremos o repository para salvar ou manusear dados. E sim o entitymanager.
 
@@ -150,7 +206,7 @@ planeta está no banco.
 
 Usaremos o **persistFlushFind** para preparar os dados.
 
-IMPORTANTE
+❗ IMPORTANTE
 -
 Quando passamos uma entidade como parâmetro no persistFlushFind, a instancia é alterada. Portanto,
 no final da operação, ela terá um ID adicionado.
@@ -201,7 +257,7 @@ Então usamos o entitymanager para dar um "detach" desse planet, tiramos seu id 
 
 # Controller
 
-## Testando cenários de sucesso no Controller
+## 🧪 Testando cenários de sucesso no Controller
 
 Testando agora a integração entre: controlador e contexto web.
 
@@ -224,7 +280,7 @@ parecido com o banco de dados fake do Repository.
 Disponibilizará um cliente HTTP para interagir com esse contexto, o MockMvc. Onde injetaremos com
 AutoWired. **Precisamos construir essa requisição.**
 
-Construindo requisição
+🛠️ Construindo requisição
 -
 
 ### ETAPA 1
@@ -318,7 +374,7 @@ public class PlanetControllerTest {
 ```
 <hr>
 
-## Testando cenário de dados invalidos no controller
+## 🧪 Testando cenário de dados invalidos no controller
 
 O que seria os dados inválidos? 
 
@@ -407,7 +463,7 @@ Código final do controller:
 ```
 <hr>
 
-## Testando cenário de planeta existente no controller
+## 🧪 Testando cenário de planeta existente no controller
 
 Testando cenário de conflito (pois o planeta já existe). Para isso, teremos que criar um teste específico.
 
@@ -441,7 +497,7 @@ do método, é possivel. Nem sempre toda DataIntegrity seria um conflito, por ex
 Agora, no controller nosso método irá funcionar e o teste dará ok. :)
 <hr>
 
-# Exercícios
+# ✅ Exercícios
 
 ## Exercício 1 - Testando consulta de planeta por ID
 
@@ -728,7 +784,8 @@ Aqui foi mais simples pois não teve nenhuma novidade.
 
 # Resumo
 
-Essa seção se utiliza mais framework (SpringBoot) do que a de [testes de unidade]() que só utiliza o mockito.
+Essa seção se utiliza mais framework (SpringBoot) do que a de [testes de unidade](https://github.com/zenonxd/estudo-testes-unidade) 
+que só utiliza o mockito.
 
 Aqui trabalhamos com as bordas de aplicação. Ou seja, interação com banco de dado/camada web.
 
@@ -740,6 +797,5 @@ Existem dois tipos de teste de integração:
 2. Amplos - Quando os testes cruzam outras camadas (quando testamos componentes)
 <hr>
 
-## Fim
 
-Agora, iremos para [testes subcutâneos]().
+Agora, iremos para [testes subcutâneos](https://github.com/zenonxd/estudo-testes-subcutaneos).
